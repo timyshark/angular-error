@@ -10,18 +10,24 @@ export class AppComponent {
 
 
   title = 'ng-error';
-  errorHandler(err: any) {
+  errorHandler(ms: number) {
+    if (ms > 10000)
     return new Error('handleError()')
+    else return of(ms)
   }
   errorHandler2(ms:number){
-    //Option 1: 
-    // return throwError(()=> `errorHandler2(): ${ms} without trail`)
+    //Option 1:  doesn't trapped in catchError
+    return throwError(()=> { console.error(`errorHandler2(): ${ms} without trail`); 
+                              throw new Error('errorHandler() catchError()=> throw new Error()')})
 
-    //Option 2:
-    throw new Error('new Error() thrown inside function')
-    return of(0) //must return observable of same type
+    //Option 2: trapped in catchError()
+    // throw new Error('new Error() thrown inside function')
+    // return of(9) //must return observable of same type, although useless
 
 
+  }
+  handleError(error:any) {
+    return of('1','2','3')
   }
   ngOnInit() {
     delays$.pipe(
@@ -44,9 +50,10 @@ export class AppComponent {
         }
       }),
       //handles the error and must return new observable  
-      catchError((err) => { 
-        console.log("Caught Error", err)
-        return of('I','II','III')})
+      // catchError((err) => { 
+      //   console.log("Caught Error", err)
+      //   return of('I','II','III')}),
+        catchError(this.handleError)
     )
       .subscribe({
         next: console.log,
